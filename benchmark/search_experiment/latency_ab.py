@@ -1,10 +1,10 @@
 """baseline(full) vs Context D2 지연 A/B 교차 측정 — 워밍업 후 번갈아 실행."""
 import json, os, sys, time, statistics as st
-sys.path.insert(0,'benchmark/search_experiment2')
+sys.path.insert(0,'benchmark/search_experiment')
 from retrievers import connect, dense_tables, vec_literal
 
 ev=json.load(open('benchmark/search_experiment/eval_set.json'))
-q=json.load(open('benchmark/search_experiment2/queries.json'))
+q=json.load(open('benchmark/search_experiment/queries.json'))
 INS=("Given a Korean news claim sentence, retrieve the KOSIS statistical table "
      "description that best matches it")
 from sentence_transformers import SentenceTransformer

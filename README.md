@@ -41,7 +41,7 @@ agent/
   verdict/         7단계   — judge.py
   explain/         8단계   — explainer.py
   shared/          여러 단계 공용 — extreme_value_patterns.py (역대/N년만에/코로나이후 등 극값 표현 감지)
-  pipeline/        전체 연결 — batch_runner.py(하드코딩 시나리오), csv_batch_runner.py(실제 CSV)
+  pipeline/        전체 연결 — batch_runner.py(하드코딩 시나리오 + 실제 CSV, --csv 옵션)
   interfaces.py    팀 공통 계약(단계별 입출력 타입) — 임의 변경 금지, 수정 시 팀 합의 필요
 data/              데이터셋(data_set.csv, 조선일보 기사, .gitignore 대상) + verifications.db
 db/                store.py — 검증 결과 SQLite 저장소
@@ -83,12 +83,6 @@ python -m agent.pipeline.batch_runner
 
 ```bash
 python -m agent.pipeline.batch_runner --csv
-```
-
-1~3단계만 실제 CSV 전체(또는 `--limit`)로 안정성 확인:
-
-```bash
-python -m agent.pipeline.csv_batch_runner --limit 25
 ```
 
 ### 4. 테스트
