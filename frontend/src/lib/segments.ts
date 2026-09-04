@@ -21,6 +21,37 @@ function normalizeQuotes(text: string): string {
   return text.replace(/[‘’]/g, "'").replace(/[“”]/g, '"');
 }
 
+// 2026-09-03(9): 순수 indexOf(따옴표 정규화만 적용)는 "◇소제목\n다음 문장"처럼 원문에서는
+// 줄바꿈으로 나뉜 두 문장을 claim_extractor가 공백 하나로 이어붙여 뽑은 경우(실측 확인:
+// "◇은행·비은행 예금 금리 차 0.4%포인트..." 케이스) 못 찾는다 — 글자는 다 같은데 그
+// 사이 공백 종류/개수 하나만 달라도 완전 실패한다. claim 문장을 정규식으로 바꾸되, 공백
+// 연속 구간은 전부 \s+(줄바꿈 포함 아무 공백이나 허용)로, 따옴표는 곧은/둥근 어느 쪽이든
+// 매칭되게 문자 클래스로 바꿔서 원문에 직접 매치한다 — 원문을 변형하지 않고 그대로
+// 매치하므로 index/matchedText가 항상 원문 좌표계와 정확히 일치한다(별도 좌표 변환 불필요).
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function buildLenientPattern(sentence: string): RegExp | null {
+  const trimmed = sentence.trim();
+  if (!trimmed) return null;
+  let pattern = escapeRegExp(trimmed);
+  pattern = pattern.replace(/['‘’]/g, "['‘’]");
+  pattern = pattern.replace(/["“”]/g, '["“”]');
+  // 2026-09-03(15): 말줄임표(…) vs 마침표 3개(...) 표기 차이도 실제로 못 찾는 원인이었다
+  // (예: "청년 백수 120만명... 실업자 27만명..." — claim_extractor는 "..."로, 원문은 "…"
+  // 하나로 쓰는 식). escapeRegExp가 "..."를 "\.\.\."로 만들어두므로, 그 반복(2개 이상)이나
+  // "…" 어느 쪽이 오든 서로 매치되게 통일한다.
+  pattern = pattern.replace(/(?:\\\.){2,}/g, "(?:\\.{2,}|…)");
+  pattern = pattern.replace(/…/g, "(?:\\.{2,}|…)");
+  pattern = pattern.replace(/\s+/g, "\\s+");
+  try {
+    return new RegExp(pattern);
+  } catch {
+    return null; // 극히 드문 경우(패턴 생성 실패) — 호출부가 "못 찾음"으로 처리
+  }
+}
+
 // 기사 원문 안에서 각 claim_sentence의 위치를 찾아, 평문/주장 구간이 번갈아 나오는
 // 세그먼트 배열로 쪼갠다. 원문에서 못 찾은 주장(공백 표기 차이 등)이나, 다른 주장과 겹쳐서
 // 인라인으로는 못 그리는 주장은 결과에서 빠지고, 호출부(ArticleTextViewer)가 별도로
@@ -68,14 +99,17 @@ export function buildArticleSegments(
   overlapSkipped: VerificationRecord[];
   claimNumbers: Map<string, number>;
 } {
-  const normalizedArticle = normalizeQuotes(articleText);
   const articleTitle = claims[0]?.article_title;
 
   const located = claims
     .map((record) => {
       const stripped = stripTitlePrefix(record.claim_sentence, articleTitle);
-      const index = normalizedArticle.indexOf(normalizeQuotes(stripped));
-      return { record, index, matchedText: index === -1 ? record.claim_sentence : stripped };
+      const pattern = buildLenientPattern(stripped);
+      const match = pattern ? articleText.match(pattern) : null;
+      if (match && match.index !== undefined) {
+        return { record, index: match.index, matchedText: match[0] };
+      }
+      return { record, index: -1, matchedText: record.claim_sentence };
     })
     .filter((m) => m.index !== -1)
     .sort((a, b) => a.index - b.index);

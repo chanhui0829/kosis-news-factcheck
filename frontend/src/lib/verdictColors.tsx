@@ -45,14 +45,27 @@ export const VERDICT_MARKER_CLASS: Record<VerdictLabel, string> = {
   애매: "bg-caution-500/80 text-white",
 };
 
+// 원문 하이라이트를 클릭했을 때 뜨는 말풍선 팝오버의 상단 액센트 바 + 꼬리(화살표) 색.
+// ArticleDetail의 ACCENT_BAR_CLASS와 같은 팔레트를 재사용해 판정색 신호를 화면 전체에서
+// 일관되게 유지한다.
+export const VERDICT_POPOVER_ACCENT_CLASS: Record<VerdictLabel, string> = {
+  일치: "bg-match-500",
+  불일치: "bg-mismatch-500",
+  판단불가: "bg-caution-500",
+  애매: "bg-caution-500",
+};
+
 export const VERDICT_COUNT_BOX_CLASS: Record<"일치" | "불일치" | "애매", string> = {
   일치: "bg-match-100 text-match-800 dark:bg-match-900/40 dark:text-match-300",
   불일치: "bg-mismatch-100 text-mismatch-800 dark:bg-mismatch-900/40 dark:text-mismatch-300",
   애매: "bg-caution-100 text-caution-800 dark:bg-caution-900/40 dark:text-caution-300",
 };
 
+// 2026-09-03(4): h-6(24px)는 이 아이콘이 실제로 쓰이는 자리(ArticleDetail 요약 뱃지,
+// text-xs=12px 라벨 옆)에 비해 너무 커서 뱃지마다 높이/여백이 들쭉날쭉해 보였다 —
+// 라벨 텍스트와 어울리는 크기로 줄임.
 export const VERDICT_ICON: Record<"일치" | "불일치" | "애매", ReactNode> = {
-  일치: <VerdictIcon verdict="일치" className="h-6 w-6" />,
-  불일치: <VerdictIcon verdict="불일치" className="h-6 w-6" />,
-  애매: <VerdictIcon verdict="애매" className="h-6 w-6" />,
+  일치: <VerdictIcon verdict="일치" className="h-5 w-5" />,
+  불일치: <VerdictIcon verdict="불일치" className="h-5 w-5" />,
+  애매: <VerdictIcon verdict="애매" className="h-5 w-5" />,
 };

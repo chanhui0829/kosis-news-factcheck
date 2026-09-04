@@ -56,6 +56,41 @@ html {
   }
 }
 
+/* 2026-09-03(10): 사이드바 "최근 검증" 목록이 이제 전체 목록을 자체 스크롤로 보여주면서
+   OS 기본 스크롤바(두꺼움)가 항상 보여 답답하다는 피드백 — 얇게 만들고, 평소엔
+   투명하게 숨겼다가 그 영역에 마우스를 올렸을 때만(:hover) 나타나게 한다(진짜 스크롤
+   이벤트 감지+타이머로 자동 숨김하는 것보다 CSS만으로 훨씬 간단하고, 결과도 비슷함 —
+   "평소엔 안 보이다가 필요할 때(만지작거릴 때)만 보인다"는 체감은 동일). Tailwind
+   기본 유틸에 스크롤바 커스터마이징이 없어서 여기 전역 클래스로 따로 정의. */
+.thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.thin-scrollbar:hover {
+  scrollbar-color: #d6d3d1 transparent;
+}
+.thin-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 9999px;
+}
+.thin-scrollbar:hover::-webkit-scrollbar-thumb {
+  background-color: #d6d3d1;
+}
+@media (prefers-color-scheme: dark) {
+  .thin-scrollbar:hover {
+    scrollbar-color: #57534e transparent;
+  }
+  .thin-scrollbar:hover::-webkit-scrollbar-thumb {
+    background-color: #57534e;
+  }
+}
+
 body {
   margin: 0;
   font-family:
